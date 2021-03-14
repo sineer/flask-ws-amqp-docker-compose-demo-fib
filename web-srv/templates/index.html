@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Flask RabbitMQ SocketIO Fibonacci Calculator</title>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+    	namespace = '/fib';
+         // establish a connection to the server for the client
+         url = 'http://' + document.domain + ':' + location.port + namespace;
+         console.log("Connecting to WebSocket Server: " + url);
+      	 var socket = io.connect(url);
+
+         // upon the connetion, the client emits an event to the server called 'connection'
+         socket.on('connect', function(){
+            console.log('you are connected to the socket!');
+        });
+
+        // 'response' event invokes the client callback function to greet the client with a message
+       	socket.on('response', function(message){
+            var response_str = 'Fibonacci number is: '+ message.number + '<br/>';
+            $('#receive_div').append(response_str);
+    	});
+
+        // 'number' event is emitted to the server upon the form submission
+    	$('form#emit').submit(function(event) {
+            console.log("Sending Nth Fibonacci number (request) to the server...");
+            socket.emit('number', {number: $('#emit_number').val()});
+            return false;
+    	});
+
+    });
+    </script>
+
+</head>
+<body>
+	<h1>Flask RabbitMQ SocketIO Fibonacci Docker-Compose demo</h1>
+	<br>
+	<h3>Fibonacci Calculator</h3>
+	<form id="emit" method="POST" action="#">
+		<input type="number" id="emit_number" name="emit_number" placeholder="Nth Fibonacci number">
+		<input type="submit" value="send">
+	</form>
+	<br>
+	<h2>Receive:</h2>
+	<div id="receive_div"></div>
+</body>
+</html>
