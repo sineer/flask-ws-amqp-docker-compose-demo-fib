@@ -1,24 +1,10 @@
 FROM tiangolo/uwsgi-nginx:python3.6
 
-EXPOSE 8080
-
-RUN pip install flask
-
-# URL under which static (not modified by Python) files will be requested
-# They will be served by Nginx directly, without being handled by uWSGI
-ENV STATIC_URL /static
-# Absolute path in where the static files wil be
-ENV STATIC_PATH /app/static
-
-# If STATIC_INDEX is 1, serve / with /static/index.html directly (or the static URL configured)
-ENV STATIC_INDEX 1
+EXPOSE 80
 
 # Add demo app
 COPY . /app/
 WORKDIR /app
-
-# Make /app/* available to be imported by Python globally to better support several use cases like Alembic migrations.
-ENV PYTHONPATH=/app
 
 # Move the base entrypoint to reuse it
 RUN chmod +x entrypoint.sh

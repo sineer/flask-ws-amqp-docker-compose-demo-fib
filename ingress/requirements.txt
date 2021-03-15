@@ -1,6 +1,0 @@
-fastapi==0.62.0
-requests==2.25.1
-uvicorn==0.13.2
-requests==2.25.1
-python-socketio==5.1.0
-python-socketio[client]
