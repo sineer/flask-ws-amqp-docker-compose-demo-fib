@@ -6,13 +6,14 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=admin
       - RABBITMQ_DEFAULT_PASS=mypass
-      - RABBITMQ_LOG_LEVELS='[{connection, error}]'
+      - RABBITMQ_LOG_LEVELS='[{connection, info}]'
   ingress:
     hostname: ingress
     build: ingress/
     ports:
       - "8080:80"
     depends_on:
+      - rabbit
       - web-srv
       - ws-srv
     environment:
@@ -29,7 +30,6 @@ services:
     environment:
         - PORT=5000
         - FLASK_DEBUG=1
-        - AMQP_URL=amqp://admin:mypass@rabbit:5672/%2f
   ws-srv:
     hostname: ws-srv
     build: ws-srv/
@@ -39,6 +39,7 @@ services:
       - rabbit
     environment:
         - PORT=5001
+        - AMQP_URL=amqp://admin:mypass@rabbit:5672/%2f
   fib-svc:
     build: fib-svc/
     depends_on:

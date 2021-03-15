@@ -1,7 +1,8 @@
 from flask import Flask, render_template
-import pika
+
 
 app = Flask(__name__)
+
 
 # route() decorator is used to define the URL where index() function is registered for
 @app.route('/')
@@ -13,7 +14,7 @@ def index():
 def add(num):
     #Access the AMQP_URL environment variable and parse it (fallback to rabbit)
     url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
-    print(f"Connecting to AMQP url: {url}", flush=True)
+    print(f"Trying to connect to AMQP url: {url}", flush=True)
     params = pika.URLParameters(url)
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit'))
