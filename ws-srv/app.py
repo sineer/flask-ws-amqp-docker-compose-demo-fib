@@ -5,7 +5,7 @@ import pika
 import sys, os, threading, time
 from os import environ
 from uvicorn.config import Config
-
+from uvicorn.main import Server
 
 # heh no comment... Still don't work too! Maybe because I must use uvicorn[standard] ?
 # https://github.com/miguelgrinberg/python-socketio/issues/282
