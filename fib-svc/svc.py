@@ -44,11 +44,14 @@ def main():
     global url
     print("Trying to connect to AMQP...", flush=True)
     params = pika.URLParameters(url)
-    try:
-        connection = pika.BlockingConnection(params)
-    except:
-        time.sleep(3)
-        main() # KEEP TRYING UNTIL RABBIT IS UP...
+
+    while True:
+        try:
+            connection = pika.BlockingConnection(params)
+            break
+        except:
+            time.sleep(3)
+            continue # KEEP TRYING UNTIL RABBIT IS UP...
     channel = connection.channel()
 
     # We receive from 'fib_in'
