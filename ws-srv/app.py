@@ -13,17 +13,17 @@ url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
 
 @sio.on("connect", namespace="/fib")
-def handle_connect(sid, environ):
+async def handle_connect(sid, environ):
     print(f"WebSocket client connected! sid: {sid}", flush=True)
 
 @sio.on("disconnect", namespace="/fib")
-def handle_disconnect(sid):
+async def handle_disconnect(sid):
     print(f"WebSocket client disconnected. sid: {sid}", flush=True)
 
 
 # WebSocket 'number' message handler
 @sio.event(namespace="/fib")
-def number(sid, data):
+async def number(sid, data):
     global url
     num = data['number']
     print(f"WebSocket 'number' message from: {sid} data: {data} nth fib #: {num}", flush=True)
@@ -104,7 +104,7 @@ async def main():
     await sio.start_background_task(processor_thread_function, [1])
 
     print("Starting Uvicorn server...", flush=True)
-    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 8081)), log_level="debug")
+    await uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
 
 
 if __name__ == '__main__':
