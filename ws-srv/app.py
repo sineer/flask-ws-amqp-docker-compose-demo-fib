@@ -1,3 +1,4 @@
+import asyncio
 import uvicorn
 import socketio
 import pika
