@@ -20,6 +20,7 @@
         // 'response' event invokes the client callback function to greet the client with a message
         socket.on('response', function(message){
             var response_str = 'Fibonacci number is: '+ message.number + '<br/>';
+            console.log(response_str);
             $('#receive_div').append(response_str);
       });
 

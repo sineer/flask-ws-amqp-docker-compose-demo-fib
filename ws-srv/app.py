@@ -67,7 +67,12 @@ def processor_thread_function(id):
 
     def amqp_receive_callback(ch, method, properties, body):
         print(" [x] Received AMQP message from 'fib_out' queue! data: %r" % body, flush=True)
-        # XXX emit_response(...)
+        try:
+            print("Emitting response over WebSocket using broadcast...", flush=True)
+            sio.emit('response', {'number': body})
+        except:
+            print("Unexpected error:", sys.exc_info()[0], flush=True)
+            print("Failed to emit socket.io response!", flush=True)
 
     # Consume AMQP messages...
     try:
