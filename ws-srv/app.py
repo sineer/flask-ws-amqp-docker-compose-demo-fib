@@ -135,6 +135,8 @@ if __name__ == '__main__':
                     log_level="debug",
                     loop="asyncio")
 
+    server = CustomServer(config=config)
+
     print("Starting Uvicorn Server...", flush=True)
     #uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
     thread = threading.Thread(target=server.run)
