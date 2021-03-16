@@ -51,7 +51,7 @@ def number(sid, data):
 # Processor thread used to dequeue response
 # from the fib-svc AMQP 'fib_out' queue and
 # broadcast a websocket response to /fib ns.
-def processor_thread_function(id):
+async def processor_thread_function(id):
     global url
     print(f"Processor {id} Trying to connect to AMQP...", flush=True)
     params = pika.URLParameters(url)
@@ -76,8 +76,8 @@ def processor_thread_function(id):
 
     # Consume AMQP messages...
     try:
-        channel.basic_consume(amqp_receive_callback,
-                              queue='fib_out')
+        await channel.basic_consume(amqp_receive_callback,
+                                    queue='fib_out')
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise
