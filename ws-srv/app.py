@@ -8,8 +8,6 @@ from os import environ
 sio = socketio.AsyncServer(async_mode='asgi', logger=True, engineio_logger=True)
 app = socketio.ASGIApp(sio)
 
-sio.attach(app)
-
 url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
 
@@ -89,9 +87,9 @@ async def processor_thread_function(id):
     print(' [*] Waiting for AMQP messages from fib_out queue...', flush=True)
 
     try:
-        channel.start_consuming()
+        await channel.start_consuming()
     except KeyboardInterrupt:
-        channel.stop_consuming()
+        await channel.stop_consuming()
 
     print(f"Processor Thread {id}: finishing", flush=True)
 
@@ -100,7 +98,7 @@ async def processor_thread_function(id):
 if __name__ == '__main__':
 
     # Start Processor thread
-    sio.start_background_task(main)
+    sio.start_background_task(target=processor_thread_function)
 
     print("Starting Uvicorn server...", flush=True)
     uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 8081)), log_level="debug")
