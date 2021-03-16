@@ -1,4 +1,3 @@
-import asyncio
 import uvicorn
 import socketio
 import pika
@@ -103,14 +102,7 @@ async def processor_thread_function(id):
 
 
 
-async def main():
-    # Start Processor thread
-    sio.start_background_task(processor_thread_function, [1])
-
-    print("Starting Uvicorn server...", flush=True)
-    await uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
-
-
 if __name__ == '__main__':
-    loop = asyncio.new_event_loop()
-    loop.run_until_complete(main())
+    processor = threading.Thread(target=processor_thread_function, args=(1,), daemon=False)
+    processor.start()
+    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
