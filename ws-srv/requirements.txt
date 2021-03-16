@@ -1,4 +1,4 @@
 python_socketio==5.1.0
+uvicorn[standard]==0.13.1
+websockets==8.1
 Pika==0.10.0
-uvicorn==0.13.1
-websockets
