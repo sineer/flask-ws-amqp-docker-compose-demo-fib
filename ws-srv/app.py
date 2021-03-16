@@ -8,7 +8,7 @@ from os import environ
 sio = socketio.AsyncServer(async_mode='asgi', logger=True, engineio_logger=True)
 app = socketio.ASGIApp(sio)
 
-sio.socket_io.attach(app)
+sio.attach(app)
 
 url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
