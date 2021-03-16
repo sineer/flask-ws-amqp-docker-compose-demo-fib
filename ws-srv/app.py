@@ -1,4 +1,3 @@
-import asyncio
 import uvicorn
 import socketio
 import pika
@@ -97,7 +96,7 @@ async def processor_thread_function(id):
     print(' [*] Waiting for AMQP messages from fib_out queue...', flush=True)
 
     try:
-        channel.start_consuming()
+        await channel.start_consuming()
     except KeyboardInterrupt:
         channel.stop_consuming()
 
@@ -145,9 +144,7 @@ if __name__ == '__main__':
         time.sleep(0.01)
     print("Custom Uvicorn Server Thread Started!")
 
-    processor = threading.Thread(target=processor_thread_function, args=(1,))
-    processor.start()
+    asyncio.run(processor_thread_function(1))
     print("Processor Thread Started!")
 
     thread.join()
-    processor.join()
