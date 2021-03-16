@@ -104,7 +104,7 @@ async def main():
     sio.start_background_task(processor_thread_function, [1])
 
     print("Starting Uvicorn server...", flush=True)
-    await uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
 
 
 if __name__ == '__main__':
