@@ -1,6 +1,9 @@
-import pika, sys, os, time
+import pika
+import sys, os, time
+
 
 url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
+
 
 def fib(n):
     a = 0
@@ -21,12 +24,13 @@ def enqueue_response(res):
         connection = pika.BlockingConnection(params)
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
-        raise
+        return "Failed to connect to AMQP!"
+
     channel = connection.channel()
     channel.exchange_declare(exchange='fibs',
                              exchange_type='fanout')
 
-    # We send to 'fib_in'
+    # We send to 'fib_out'
     channel.queue_declare(queue='fib_out')
     channel.basic_publish(
         exchange='fibs',
@@ -35,14 +39,15 @@ def enqueue_response(res):
     channel.queue_bind(exchange='fibs',
                        queue='fib_out')
     connection.close()
-    ret = f"Sent Nth fibonacci number: {res} to AMQP fib_out queue for processing..."
+
+    ret = f"Sent Nth fibonacci number: {res} to AMQP 'fib_out' queue for processing..."
     print(ret, flush=True)
     return ret
 
 
 def main():
     global url
-    print(f"Trying to connect to AMQP url: {url}", flush=True)
+    print("Trying to connect to AMQP...", flush=True)
     params = pika.URLParameters(url)
     try:
         connection = pika.BlockingConnection(params)
@@ -54,12 +59,16 @@ def main():
     # We receive from 'fib_in'
     channel.queue_declare(queue='fib_in')
 
-    def receive_callback(ch, method, properties, body):
-        print(" [x] Received AMQP message from fib_in queue! data: %r" % body, flush=True)
+    def amqp_receive_callback(ch, method, properties, body):
+        print(" [x] Received AMQP message from 'fib_in' queue! data: %r" % body, flush=True)
         res = fib(int(body))
         enqueue_response(str(res))
+
+    # Consume AMQP messages...
     try:
-        channel.basic_consume(receive_callback, queue='fib_in', no_ack=False)
+        channel.basic_consume(amqp_receive_callback,
+                              queue='fib_in',
+                              no_ack=False)
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise
