@@ -79,7 +79,7 @@ async def processor_thread_function(id):
 
     # Consume AMQP messages...
     try:
-        await channel.basic_consume(amqp_receive_callback,
+        channel.basic_consume(amqp_receive_callback,
                                     queue='fib_out')
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
@@ -88,9 +88,9 @@ async def processor_thread_function(id):
     print(' [*] Waiting for AMQP messages from fib_out queue...', flush=True)
 
     try:
-        await channel.start_consuming()
+        channel.start_consuming()
     except KeyboardInterrupt:
-        await channel.stop_consuming()
+        channel.stop_consuming()
 
     print(f"Processor Thread {id}: finishing", flush=True)
 
