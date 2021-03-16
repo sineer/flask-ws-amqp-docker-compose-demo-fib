@@ -145,7 +145,7 @@ if __name__ == '__main__':
         time.sleep(0.01)
     print("Custom Uvicorn Server Thread Started!")
 
-    processor = threading.Thread(target=processor_thread_function)
+    processor = threading.Thread(target=processor_thread_function, args=(1,))
     processor.start()
     print("Processor Thread Started!")
 
