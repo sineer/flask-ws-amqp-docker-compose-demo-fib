@@ -149,5 +149,5 @@ if __name__ == '__main__':
     processor.start()
     print("Processor Thread Started!")
 
-    thead.join()
+    thread.join()
     processor.join()
