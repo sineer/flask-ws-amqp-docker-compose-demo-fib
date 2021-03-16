@@ -26,19 +26,12 @@ def enqueue_response(res):
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         return "Failed to connect to AMQP!"
 
-    channel = connection.channel()
-    channel.exchange_declare(exchange='fib',
-                             exchange_type='fanout')
-
     # We send to 'fib_out'
+    channel = connection.channel()
     channel.queue_declare(queue='fib_out')
-    channel.basic_publish(
-        exchange='fib',
-        routing_key='fib_out',
-        body=res)
-    channel.queue_bind(exchange='fib',
-                       queue='fib_out')
-
+    channel.basic_publish(exchange='',
+                          routing_key='fib_out',
+                          body=res)
 
     connection.close()
 
@@ -76,8 +69,7 @@ def main():
     # Consume AMQP messages...
     try:
         channel.basic_consume(amqp_receive_callback,
-                              queue='fib_in',
-                              no_ack=False)
+                              queue='fib_in')
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise

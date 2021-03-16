@@ -24,18 +24,12 @@ def add(num):
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise
 
-    channel = connection.channel()
-    channel.exchange_declare(exchange='fib',
-                             exchange_type='fanout')
-
     # We send to 'fib_in'
+    channel = connection.channel()
     channel.queue_declare(queue='fib_in')
-    channel.basic_publish(
-        exchange='fib',
-        routing_key='fib_in',
-        body=num)
-    channel.queue_bind(exchange='fib',
-                       queue='fib_in')
+    channel.basic_publish(exchange='',
+                          routing_key='fib_in',
+                          body=num)
 
     connection.close()
 

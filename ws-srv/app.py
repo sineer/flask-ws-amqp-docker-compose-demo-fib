@@ -35,18 +35,12 @@ def number(sid, data):
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         return "Failed to connect to AMQP!"
 
-    channel = connection.channel()
-    channel.exchange_declare(exchange='fib',
-                             exchange_type='fanout')
-
     # We send to 'fib_in'
+    channel = connection.channel()
     channel.queue_declare(queue='fib_in')
-    channel.basic_publish(
-        exchange='fib',
-        routing_key='fib_in',
-        body=num)
-    channel.queue_bind(exchange='fib',
-                       queue='fib_in')
+    channel.basic_publish(exchange='',
+                          routing_key='fib_in',
+                          body=num)
     connection.close()
 
     ret = f"Sent Nth fibonacci number: {num} to AMQP 'fib_in' for processing..."
@@ -78,8 +72,7 @@ def processor_thread_function(id):
     # Consume AMQP messages...
     try:
         channel.basic_consume(amqp_receive_callback,
-                              queue='fib_out',
-                              no_ack=False)
+                              queue='fib_out')
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise
