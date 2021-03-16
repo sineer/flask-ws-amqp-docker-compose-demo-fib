@@ -6,7 +6,8 @@ import sys, os, threading, time
 from os import environ
 
 
-# heh no comment...
+# heh no comment... Still don't work too! Maybe because I must use uvicorn[standard] ?
+# https://github.com/miguelgrinberg/python-socketio/issues/282
 from uvicorn.loops.uvloop import uvloop_setup
 
 
@@ -109,7 +110,7 @@ async def start_processor():
 
 async def start_uvicorn():
     print("Starting Uvicorn Server...", flush=True)
-    await uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
 
 
 async def main(loop):
