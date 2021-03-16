@@ -4,6 +4,7 @@ import socketio
 import pika
 import sys, os, threading, time
 from os import environ
+from uvicorn.config import Config
 
 
 # heh no comment... Still don't work too! Maybe because I must use uvicorn[standard] ?
@@ -109,8 +110,23 @@ async def start_processor():
     await sio.start_background_task(processor_thread_function, [1])
 
 async def start_uvicorn():
+    class CustomServer(Server):
+        def install_signal_handlers(self):
+            pass
+
+    config = Config(app,
+                    host='0.0.0.0',
+                    port=int(environ.get("PORT", 5001)),
+                    log_level="debug",
+                    loop="asyncio")
+
     print("Starting Uvicorn Server...", flush=True)
-    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+    #uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+    thread = threading.Thread(target=server.run)
+    thread.start()
+    print("Custom Uvicorn Server Thread Started!")
+    while not server.started:
+        time.sleep(0.01)
 
 
 async def main(loop):
