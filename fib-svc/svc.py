@@ -27,20 +27,22 @@ def enqueue_response(res):
         return "Failed to connect to AMQP!"
 
     channel = connection.channel()
-    channel.exchange_declare(exchange='fibs',
+    channel.exchange_declare(exchange='fib',
                              exchange_type='fanout')
 
     # We send to 'fib_out'
     channel.queue_declare(queue='fib_out')
     channel.basic_publish(
-        exchange='fibs',
+        exchange='fib',
         routing_key='fib_out',
         body=res)
-    channel.queue_bind(exchange='fibs',
+    channel.queue_bind(exchange='fib',
                        queue='fib_out')
+
+
     connection.close()
 
-    ret = f"Sent Nth fibonacci number: {res} to AMQP 'fib_out' queue for processing..."
+    ret = f"Sent fibonacci number: {res} to AMQP 'fib_out' queue for processing..."
     print(ret, flush=True)
     return ret
 
@@ -61,8 +63,15 @@ def main():
 
     def amqp_receive_callback(ch, method, properties, body):
         print(" [x] Received AMQP message from 'fib_in' queue! data: %r" % body, flush=True)
-        res = fib(int(body))
-        enqueue_response(str(res))
+
+        try:
+            num = int(body)
+            print(f"Received Nth fibonacci #: {num}")
+            res = fib(num)
+            print(f"Fibonacci for the Nth #{num} is: {res}")
+            enqueue_response(str(res))
+        except:
+            print(f"failed to cast body: {body} into an integer!", flush=True)
 
     # Consume AMQP messages...
     try:
@@ -74,7 +83,13 @@ def main():
         raise
 
     print(' [*] Waiting for AMQP messages from fib_in queue...', flush=True)
-    channel.start_consuming()
+
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        channel.stop_consuming()
+
+    print("Goodbye!", flush=True)
 
 
 if __name__ == '__main__':

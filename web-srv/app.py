@@ -1,7 +1,9 @@
 from flask import Flask, render_template
+import sys, os, time
 
 
 app = Flask(__name__)
+url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
 
 # route() decorator is used to define the URL where index() function is registered for
@@ -12,25 +14,31 @@ def index():
 
 @app.route('/fib/<num>')
 def add(num):
-    #Access the AMQP_URL environment variable and parse it (fallback to rabbit)
-    url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
-    print(f"Trying to connect to AMQP url: {url}", flush=True)
+    global url
+
+    print("Trying to connect to AMQP...", flush=True)
     params = pika.URLParameters(url)
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit'))
+        connection = pika.BlockingConnection(params)
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise
+
     channel = connection.channel()
-    channel.queue_declare(queue='fibonacci', durable=True)
+    channel.exchange_declare(exchange='fib',
+                             exchange_type='fanout')
+
+    # We send to 'fib_in'
+    channel.queue_declare(queue='fib_in')
     channel.basic_publish(
-        exchange='',
-        routing_key='fibonacci',
-        body=num,
-        properties=pika.BasicProperties(
-            delivery_mode=2,  # make message persistent
-        ))
+        exchange='fib',
+        routing_key='fib_in',
+        body=num)
+    channel.queue_bind(exchange='fib',
+                       queue='fib_in')
+
     connection.close()
+
     ret = f"Sent Nth fibonacci number: {num}"
     print(ret, flush=True)
     return ret

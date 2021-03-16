@@ -36,16 +36,16 @@ def number(sid, data):
         return "Failed to connect to AMQP!"
 
     channel = connection.channel()
-    channel.exchange_declare(exchange='fibs',
+    channel.exchange_declare(exchange='fib',
                              exchange_type='fanout')
 
     # We send to 'fib_in'
     channel.queue_declare(queue='fib_in')
     channel.basic_publish(
-        exchange='fibs',
+        exchange='fib',
         routing_key='fib_in',
         body=num)
-    channel.queue_bind(exchange='fibs',
+    channel.queue_bind(exchange='fib',
                        queue='fib_in')
     connection.close()
 
@@ -73,7 +73,6 @@ def processor_thread_function(id):
 
     def amqp_receive_callback(ch, method, properties, body):
         print(" [x] Received AMQP message from 'fib_out' queue! data: %r" % body, flush=True)
-        res = fib(int(body))
         # XXX emit_response(...)
 
     # Consume AMQP messages...
@@ -85,9 +84,14 @@ def processor_thread_function(id):
         print("Unexpected error:", sys.exc_info()[0], flush=True)
         raise
 
-    print(' [*] Waiting for AMQP messages from fib_in queue...', flush=True)
-    channel.start_consuming()
-    logging.info("Processor Thread %s: finishing", name)
+    print(' [*] Waiting for AMQP messages from fib_out queue...', flush=True)
+
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        channel.stop_consuming()
+
+    print(f"Processor Thread {id}: finishing", flush=True)
 
 
 
