@@ -69,7 +69,7 @@ def processor_thread_function(id):
         print(" [x] Received AMQP message from 'fib_out' queue! data: %r" % body, flush=True)
         try:
             print("Emitting response over WebSocket using broadcast...", flush=True)
-            sio.emit('response', {'number': body})
+            sio.of('/fib').emit('response', {'number': body})
         except:
             print("Unexpected error:", sys.exc_info()[0], flush=True)
             print("Failed to emit socket.io response!", flush=True)
