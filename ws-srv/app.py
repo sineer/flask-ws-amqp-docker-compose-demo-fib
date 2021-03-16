@@ -67,7 +67,7 @@ async def processor_thread_function(id):
     # We receive from 'fib_out'
     channel.queue_declare(queue='fib_out')
 
-    def amqp_receive_callback(ch, method, properties, body):
+    async def amqp_receive_callback(ch, method, properties, body):
         print(" [x] Received AMQP message from 'fib_out' queue! data: %r" % body, flush=True)
         try:
             print("Emitting response over WebSocket using broadcast...", flush=True)
