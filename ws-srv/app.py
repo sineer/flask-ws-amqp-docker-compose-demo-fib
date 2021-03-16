@@ -147,8 +147,6 @@ if __name__ == '__main__':
 
     processor = threading.Thread(target=processor_thread_function)
     processor.start()
-    while not processor.started:
-        time.sleep(0.01)
     print("Processor Thread Started!")
 
     thead.join()
