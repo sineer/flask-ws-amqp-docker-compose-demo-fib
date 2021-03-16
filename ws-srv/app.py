@@ -1,12 +1,13 @@
+import asyncio
 import uvicorn
 import socketio
 import pika
 import sys, os, threading, time
 from os import environ
 
+
 # heh no comment...
-import nest_asyncio
-nest_asyncio.apply()
+from uvicorn.loops.uvloop import uvloop_setup
 
 
 sio = socketio.AsyncServer(async_mode='asgi', logger=True, engineio_logger=True)
@@ -101,8 +102,24 @@ async def processor_thread_function(id):
     print(f"Processor Thread {id}: finishing", flush=True)
 
 
+# Set up the event loop...
+async def start_processor():
+    print("Starting Processor...", flush=True)
+    await sio.start_background_task(processor_thread_function, [1])
+
+async def start_uvicorn():
+    print("Starting Uvicorn Server...", flush=True)
+    await uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+
+
+async def main(loop):
+    bg_task = loop.create_task(start_processor())
+    uv_task = loop.create_task(start_uvicorn())
+    await asyncio.wait([bg_task, uv_task])
+
 
 if __name__ == '__main__':
-    processor = threading.Thread(target=processor_thread_function, args=(1,), daemon=False)
-    processor.start()
-    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+    uvloop_setup()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main(loop))
+    loop.close()
