@@ -61,7 +61,7 @@ async def processor_thread_function():
         connection = pika.BlockingConnection(params)
     except:
         time.sleep(3)
-        processor_thread_function() # KEEP TRYING UNTIL RABBIT IS UP...
+        await processor_thread_function() # KEEP TRYING UNTIL RABBIT IS UP...
     channel = connection.channel()
 
     # We receive from 'fib_out'
