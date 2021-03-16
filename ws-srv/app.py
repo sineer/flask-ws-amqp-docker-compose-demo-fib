@@ -7,21 +7,24 @@ from os import environ
 
 sio = socketio.AsyncServer(async_mode='asgi', logger=True, engineio_logger=True)
 app = socketio.ASGIApp(sio)
+
+sio.socket_io.attach(app)
+
 url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
 
 @sio.on("connect", namespace="/fib")
-def handle_connect(sid, environ):
+async def handle_connect(sid, environ):
     print(f"WebSocket client connected! sid: {sid}", flush=True)
 
 @sio.on("disconnect", namespace="/fib")
-def handle_disconnect(sid):
+async def handle_disconnect(sid):
     print(f"WebSocket client disconnected. sid: {sid}", flush=True)
 
 
 # WebSocket 'number' message handler
 @sio.event(namespace="/fib")
-def number(sid, data):
+async def number(sid, data):
     global url
     num = data['number']
     print(f"WebSocket 'number' message from: {sid} data: {data} nth fib #: {num}", flush=True)
@@ -38,9 +41,10 @@ def number(sid, data):
     # We send to 'fib_in'
     channel = connection.channel()
     channel.queue_declare(queue='fib_in')
-    channel.basic_publish(exchange='',
-                          routing_key='fib_in',
-                          body=num)
+
+    await channel.basic_publish(exchange='',
+                                routing_key='fib_in',
+                                body=num)
     connection.close()
 
     ret = f"Sent Nth fibonacci number: {num} to AMQP 'fib_in' for processing..."
@@ -95,9 +99,8 @@ async def processor_thread_function(id):
 
 if __name__ == '__main__':
 
-    # Start Processos thread
-    processor = threading.Thread(target=processor_thread_function, args=(1,), daemon=False)
-    processor.start()
+    # Start Processor thread
+    sio.start_background_task(main)
 
     print("Starting Uvicorn server...", flush=True)
     uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 8081)), log_level="debug")
