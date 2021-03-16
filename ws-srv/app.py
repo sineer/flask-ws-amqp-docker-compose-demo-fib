@@ -5,7 +5,7 @@ import sys, os, threading, time
 from os import environ
 
 
-sio = socketio.AsyncServer(async_mode='asgi')
+sio = socketio.AsyncServer(async_mode='asgi', logger=True, engineio_logger=True)
 app = socketio.ASGIApp(sio)
 url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
