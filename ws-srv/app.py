@@ -13,17 +13,17 @@ url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
 
 @sio.on("connect", namespace="/fib")
-async def handle_connect(sid, environ):
+def handle_connect(sid, environ):
     print(f"WebSocket client connected! sid: {sid}", flush=True)
 
 @sio.on("disconnect", namespace="/fib")
-async def handle_disconnect(sid):
+def handle_disconnect(sid):
     print(f"WebSocket client disconnected. sid: {sid}", flush=True)
 
 
 # WebSocket 'number' message handler
 @sio.event(namespace="/fib")
-async def number(sid, data):
+def number(sid, data):
     global url
     num = data['number']
     print(f"WebSocket 'number' message from: {sid} data: {data} nth fib #: {num}", flush=True)
