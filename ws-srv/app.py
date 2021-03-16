@@ -148,4 +148,8 @@ if __name__ == '__main__':
     asyncio.run(processor_thread_function(1))
     print("Processor Thread Started!")
 
+    # NOTE: So this was one last attempt but I am forced to use asyncio in the end because
+    #       of sio.emit being async... Now my "custom" Uvicorn server starts but it's the
+    #       processor thread that's hung up and does not try to connect to AMQP.
+
     thread.join()
