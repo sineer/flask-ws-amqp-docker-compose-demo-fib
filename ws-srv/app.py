@@ -104,12 +104,27 @@ async def processor_thread_function(id):
     print(f"Processor Thread {id}: finishing", flush=True)
 
 
-# Set up the event loop...
-async def start_processor():
-    print("Starting Processor...", flush=True)
-    await sio.start_background_task(processor_thread_function, [1])
 
-async def start_uvicorn():
+# Set up the event loop...
+# async def start_processor():
+#     print("Starting Processor...", flush=True)
+#     await sio.start_background_task(processor_thread_function, [1])
+
+# async def start_uvicorn():
+#     print("Starting Uvicorn Server...", flush=True)
+#     uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+
+# async def main(loop):
+#     bg_task = loop.create_task(start_processor())
+#     uv_task = loop.create_task(start_uvicorn())
+#     await asyncio.wait([bg_task, uv_task])
+
+if __name__ == '__main__':
+    # uvloop_setup()
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(main(loop))
+    # loop.close()
+
     class CustomServer(Server):
         def install_signal_handlers(self):
             pass
@@ -124,19 +139,15 @@ async def start_uvicorn():
     #uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
     thread = threading.Thread(target=server.run)
     thread.start()
-    print("Custom Uvicorn Server Thread Started!")
     while not server.started:
         time.sleep(0.01)
+    print("Custom Uvicorn Server Thread Started!")
 
+    processor = threading.Thread(target=processor_thread_function)
+    processor.start()
+    while not processor.started:
+        time.sleep(0.01)
+    print("Processor Thread Started!")
 
-async def main(loop):
-    bg_task = loop.create_task(start_processor())
-    uv_task = loop.create_task(start_uvicorn())
-    await asyncio.wait([bg_task, uv_task])
-
-
-if __name__ == '__main__':
-    uvloop_setup()
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(loop))
-    loop.close()
+    thead.join()
+    processor.join()
