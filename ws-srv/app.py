@@ -5,6 +5,10 @@ import pika
 import sys, os, threading, time
 from os import environ
 
+# heh no comment...
+import nest_asyncio
+nest_asyncio.apply()
+
 
 sio = socketio.AsyncServer(async_mode='asgi', logger=True, engineio_logger=True)
 app = socketio.ASGIApp(sio)
@@ -104,9 +108,9 @@ async def main():
     sio.start_background_task(processor_thread_function, [1])
 
     print("Starting Uvicorn server...", flush=True)
-    uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
+    await uvicorn.run(app, host='0.0.0.0', port=int(environ.get("PORT", 5001)), log_level="debug")
 
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
     loop.run_until_complete(main())
