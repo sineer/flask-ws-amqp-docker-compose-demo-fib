@@ -53,15 +53,15 @@ async def number(sid, data):
 # Processor thread used to dequeue response
 # from the fib-svc AMQP 'fib_out' queue and
 # broadcast a websocket response to /fib ns.
-async def processor_thread_function(id):
+async def processor_thread_function():
     global url
-    print(f"Processor {id} Trying to connect to AMQP...", flush=True)
+    print("Processor Trying to connect to AMQP...", flush=True)
     params = pika.URLParameters(url)
     try:
         connection = pika.BlockingConnection(params)
     except:
         time.sleep(3)
-        processor_thread_function(id) # KEEP TRYING UNTIL RABBIT IS UP...
+        processor_thread_function() # KEEP TRYING UNTIL RABBIT IS UP...
     channel = connection.channel()
 
     # We receive from 'fib_out'
@@ -91,7 +91,7 @@ async def processor_thread_function(id):
     except KeyboardInterrupt:
         await channel.stop_consuming()
 
-    print(f"Processor Thread {id}: finishing", flush=True)
+    print("Processor Thread finishing", flush=True)
 
 
 
