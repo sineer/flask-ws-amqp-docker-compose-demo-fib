@@ -5,24 +5,24 @@ import sys, os, threading, time
 from os import environ
 
 
-sio = socketio.Server(logger=True, engineio_logger=True)
-app = socketio.WSGIApp(sio)
+sio = socketio.AsyncServer(logger=True, engineio_logger=True)
+app = socketio.ASGIApp(sio)
 
 url = os.environ.get('AMQP_URL', 'amqp://guest:guest@rabbit:5672/%2f')
 
 
 @sio.on("connect", namespace="/fib")
-def handle_connect(sid, environ):
+async def handle_connect(sid, environ):
     print(f"WebSocket client connected! sid: {sid}", flush=True)
 
 @sio.on("disconnect", namespace="/fib")
-def handle_disconnect(sid):
+async def handle_disconnect(sid):
     print(f"WebSocket client disconnected. sid: {sid}", flush=True)
 
 
 # WebSocket 'number' message handler
 @sio.event(namespace="/fib")
-def number(sid, data):
+async def number(sid, data):
     global url
     num = data['number']
     print(f"WebSocket 'number' message from: {sid} data: {data} nth fib #: {num}", flush=True)
@@ -53,7 +53,7 @@ def number(sid, data):
 # Processor thread used to dequeue response
 # from the fib-svc AMQP 'fib_out' queue and
 # broadcast a websocket response to /fib ns.
-def processor_thread_function(id):
+async def processor_thread_function(id):
     global url
     print(f"Processor {id} Trying to connect to AMQP...", flush=True)
     params = pika.URLParameters(url)
@@ -61,7 +61,7 @@ def processor_thread_function(id):
         connection = pika.BlockingConnection(params)
     except:
         time.sleep(3)
-        processor_thread_function(id) # KEEP TRYING UNTIL RABBIT IS UP...
+        await processor_thread_function(id) # KEEP TRYING UNTIL RABBIT IS UP...
     channel = connection.channel()
 
     # We receive from 'fib_out'
@@ -71,14 +71,14 @@ def processor_thread_function(id):
         print(" [x] Received AMQP message from 'fib_out' queue! data: %r" % body, flush=True)
         try:
             print("Emitting response over WebSocket using broadcast...", flush=True)
-            sio.emit('response', {'number': body}, namespace="/fib")
+            await sio.emit('response', {'number': body}, namespace="/fib")
         except:
             print("Unexpected error:", sys.exc_info()[0], flush=True)
             print("Failed to emit socket.io response!", flush=True)
 
     # Consume AMQP messages...
     try:
-        channel.basic_consume(amqp_receive_callback,
+        await channel.basic_consume(amqp_receive_callback,
                                     queue='fib_out')
     except:
         print("Unexpected error:", sys.exc_info()[0], flush=True)
@@ -87,9 +87,9 @@ def processor_thread_function(id):
     print(' [*] Waiting for AMQP messages from fib_out queue...', flush=True)
 
     try:
-        channel.start_consuming()
+        await channel.start_consuming()
     except KeyboardInterrupt:
-        channel.stop_consuming()
+        await channel.stop_consuming()
 
     print(f"Processor Thread {id}: finishing", flush=True)
 
