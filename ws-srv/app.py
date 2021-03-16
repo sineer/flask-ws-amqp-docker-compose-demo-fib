@@ -152,4 +152,9 @@ if __name__ == '__main__':
     #       of sio.emit being async... Now my "custom" Uvicorn server starts but it's the
     #       processor thread that's hung up and does not try to connect to AMQP.
 
+    # NOTE2: Upgraded Pika and was able to install Python 3.7 to work around this...
+    #        But now I have issue with my amqp_receive_callback coro not being awaited:
+    # /usr/local/lib/python3.7/site-packages/pika/adapters/blocking_connection.py:1493:
+    #  RuntimeWarning: coroutine 'processor_thread_function.<locals>.amqp_receive_callback' was never awaited
+
     thread.join()
